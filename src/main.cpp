@@ -1,18 +1,43 @@
 #include <Arduino.h>
 
-// put function declarations here:
-int myFunction(int, int);
+#include "setup.h"
+#include "state.h"
+#include "led.h"
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+    Serial.begin(9600);
+    initializePins();
+    initializeLEDs();
+
+    // initialize to idle 
+    ledState(STATE_IDLE);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
+    checkTimeouts();
+    
+    // Only update LED when the state changes
+    if (currentState != lastState) {
+        ledState(currentState);  // Update LED when state changes
+        lastState = currentState;  // Save the new state
+    }
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+    switch (getCurrentState()) {
+
+        case STATE_IDLE:
+            handleIdleState();
+            break;
+
+        case STATE_RUNNING:
+            handleRunningState();
+            break;
+
+        case STATE_PAUSED:
+            handlePausedState();
+            break;
+
+        case STATE_FAULT:
+            handleFaultState();
+            break;
+    }
 }
