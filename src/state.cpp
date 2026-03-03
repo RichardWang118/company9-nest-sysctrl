@@ -9,6 +9,9 @@ const unsigned long FEEDER_TIMEOUT_MS = 5000;
 const unsigned long QCM_TIMEOUT_MS    = 10000;
 unsigned long feederCommandTime = 0;
 unsigned long qcmCommandTime = 0;
+unsigned long previousFeederCommandTime = 0;
+unsigned long previousQcmCommandTime = 0;
+bool paused = false;
 
 SystemState currentState = STATE_IDLE;
 SystemState lastState = STATE_IDLE;
@@ -25,7 +28,8 @@ void enterFault(FaultCode fault) {
     digitalWrite(SYSTEM_ENABLE_PIN, LOW);
     digitalWrite(FEEDER_FEED_PIN, LOW);       
     digitalWrite(QCM_START_PIN, LOW);         
-    digitalWrite(STACKER_PASS_FAIL_PIN, LOW); 
+    digitalWrite(HOPPER_ENABLE_PIN, LOW);  
+    // digitalWrite(STACKER_PASS_FAIL_PIN, LOW); 
 
     Serial.print("FAULT ENTERED: ");
     Serial.println(fault);
@@ -51,20 +55,23 @@ void commandQCM() {
 // }
 
 void checkTimeouts() {
-    if (digitalRead(FEEDER_FEED_PIN) == HIGH &&
-        millis() - feederCommandTime > FEEDER_TIMEOUT_MS) {
-        enterFault(FAULT_FEEDER_TIMEOUT);
-    }
+    if (!paused) {
+        if (digitalRead(FEEDER_FEED_PIN) == HIGH &&
+            millis() - feederCommandTime > FEEDER_TIMEOUT_MS) {
+            enterFault(FAULT_FEEDER_TIMEOUT);
+        }
 
-    if (digitalRead(QCM_START_PIN) == HIGH &&
-        millis() - qcmCommandTime > QCM_TIMEOUT_MS) {
-        enterFault(FAULT_QCM_TIMEOUT);
+        if (digitalRead(QCM_START_PIN) == HIGH &&
+            millis() - qcmCommandTime > QCM_TIMEOUT_MS) {
+            enterFault(FAULT_QCM_TIMEOUT);
+        }
     }
 }
 
 void handleIdleState() {
     if (!digitalRead(START_BUTTON_PIN)) {
         digitalWrite(SYSTEM_ENABLE_PIN, HIGH);
+        digitalWrite(HOPPER_ENABLE_PIN, HIGH);
         currentState = STATE_RUNNING;
     }
 }
@@ -74,18 +81,18 @@ void handleRunningState() {
         digitalWrite(FEEDER_FEED_PIN, LOW);
     }
 
-    if (!digitalRead(FEEDER_ISOLATED_PIN) && !digitalRead(QCM_READY_PIN)) {
+    if (digitalRead(FEEDER_ISOLATED_PIN) == LOW && digitalRead(QCM_READY_PIN) == LOW) {
         commandFeeder();
         commandQCM();
     }
 
-    // if (digitalRead(STACKER_DONE_PIN)) {
-    //     bool pass = digitalRead();
-    //     routeBirdie(pass);
-    // }
-
     if (!digitalRead(PAUSE_BUTTON_PIN)) {
         currentState = STATE_PAUSED;
+
+        // log the time contributed to the timeout
+        paused = true;
+        feederCommandTime = millis() - feederCommandTime;
+        qcmCommandTime = millis() - qcmCommandTime;
     }
 
     if (!digitalRead(HOPPER_JAM_PIN) || !digitalRead(FEEDER_JAM_PIN) || !digitalRead(STACKER_JAM_PIN)) {
@@ -96,6 +103,11 @@ void handleRunningState() {
 void handlePausedState() {
     if (!digitalRead(PAUSE_BUTTON_PIN)) {
         currentState = STATE_RUNNING;
+
+        // set the timeout time to be normalized with millis() system time
+        paused = false;
+        feederCommandTime = millis() - feederCommandTime;
+        qcmCommandTime = millis() - qcmCommandTime;
     }
 }
 

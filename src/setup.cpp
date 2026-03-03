@@ -15,29 +15,30 @@ void initializePins() {
     pinMode(STACKER_JAM_PIN, INPUT_PULLUP);
 
     pinMode(QCM_READY_PIN, INPUT_PULLUP);      
-    pinMode(QCM_MODE_CYCLE, INPUT_PULLUP);       
-    pinMode(QCM_SELECT_MODE, INPUT);            // input only gpio lmao    
-    pinMode(FEEDER_ISOLATED_PIN, INPUT);        // input only gpio lmao    
+    // pinMode(QCM_MODE_CYCLE, INPUT_PULLUP);       
+    // pinMode(QCM_SELECT_MODE, INPUT);            // input only gpio lmao    
+    pinMode(FEEDER_ISOLATED_PIN, INPUT_PULLUP);        // input only gpio lmao    
 
-    pinMode(STACKER_DONE_PIN, INPUT);           // input only gpio lmao   
+    // pinMode(STACKER_DONE_PIN, INPUT);           // input only gpio lmao   
 
     // initialize outputs
     pinMode(BUZZER_PIN, OUTPUT);
     pinMode(SYSTEM_ENABLE_PIN, OUTPUT);
     pinMode(FEEDER_FEED_PIN, OUTPUT);
     pinMode(QCM_START_PIN, OUTPUT);
-    pinMode(STACKER_PASS_FAIL_PIN, OUTPUT);
-    pinMode(QCM_MODE_SELECT_0, OUTPUT);
-    pinMode(QCM_MODE_SELECT_1, OUTPUT);
+    pinMode(HOPPER_ENABLE_PIN, OUTPUT);
+    // pinMode(STACKER_PASS_FAIL_PIN, OUTPUT);
+    // pinMode(QCM_MODE_SELECT_0, OUTPUT);
+    // pinMode(QCM_MODE_SELECT_1, OUTPUT);
 
     // initialize output state to prevent undefined states
     noTone(BUZZER_PIN);
     digitalWrite(SYSTEM_ENABLE_PIN, LOW);
     digitalWrite(FEEDER_FEED_PIN, LOW);       
     digitalWrite(QCM_START_PIN, LOW);         
-    digitalWrite(STACKER_PASS_FAIL_PIN, LOW); 
-    digitalWrite(QCM_MODE_SELECT_0, LOW);     
-    digitalWrite(QCM_MODE_SELECT_1, LOW); 
+    // digitalWrite(STACKER_PASS_FAIL_PIN, LOW); 
+    // digitalWrite(QCM_MODE_SELECT_0, LOW);     
+    // digitalWrite(QCM_MODE_SELECT_1, LOW); 
 }
 
 void initializeLEDs() {

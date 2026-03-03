@@ -3,6 +3,7 @@
 #include "setup.h"
 #include "state.h"
 #include "led.h"
+#include "buzzer.h"
 
 void setup() {
     Serial.begin(9600);
@@ -11,6 +12,7 @@ void setup() {
 
     // initialize to idle 
     ledState(STATE_IDLE);
+    buzzerStartup();
 }
 
 void loop() {
@@ -20,6 +22,11 @@ void loop() {
     if (currentState != lastState) {
         ledState(currentState);  // Update LED when state changes
         lastState = currentState;  // Save the new state
+        if (currentState == STATE_FAULT) {
+            buzzerError();
+        } else if (currentState == STATE_RUNNING) {
+            buzzerPass(); // temp
+        }
     }
 
     switch (getCurrentState()) {
